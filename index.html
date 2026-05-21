@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Client Notes Tracker</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --background: #f3f5f8;
+      --surface: #ffffff;
+      --text: #1f2933;
+      --muted: #667085;
+      --border: #dfe4ec;
+      --soft-border: #edf1f6;
+      --accent: #2563eb;
+      --accent-dark: #1d4ed8;
+      --danger: #b42318;
+      --danger-bg: #fff4f2;
+      --shadow: 0 18px 48px rgba(31, 41, 51, 0.08);
+      --card-shadow: 0 10px 28px rgba(31, 41, 51, 0.07);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.09), transparent 28rem),
+        linear-gradient(180deg, #fbfcff 0%, var(--background) 100%);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .app {
+      width: min(860px, 100%);
+      margin: 0 auto;
+      padding: 44px 16px;
+    }
+
+    header {
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 8vw, 3rem);
+      line-height: 1.1;
+      letter-spacing: 0;
+      color: #172033;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 1rem;
+    }
+
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+      margin-bottom: 18px;
+    }
+
+    .client-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .form-row {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      color: #344054;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px 13px;
+      color: var(--text);
+      font: inherit;
+      background: #ffffff;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--accent);
+      outline: 3px solid rgba(37, 99, 235, 0.16);
+    }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .primary-button {
+      justify-self: start;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 12px 18px;
+      box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18);
+    }
+
+    .primary-button:hover {
+      background: var(--accent-dark);
+      transform: translateY(-1px);
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .toolbar h2 {
+      margin: 0;
+      color: #172033;
+      font-size: 1.25rem;
+    }
+
+    .search-label {
+      position: relative;
+      flex: 1;
+      max-width: 320px;
+    }
+
+    .search-label::before {
+      position: absolute;
+      top: 50%;
+      left: 13px;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #98a2b3;
+      border-radius: 50%;
+      content: "";
+      transform: translateY(-58%);
+    }
+
+    .search-label::after {
+      position: absolute;
+      top: 50%;
+      left: 26px;
+      width: 7px;
+      height: 2px;
+      border-radius: 2px;
+      background: #98a2b3;
+      content: "";
+      transform: translateY(5px) rotate(45deg);
+    }
+
+    .search-input {
+      padding-left: 40px;
+      background: #f8fafc;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    }
+
+    .client-list {
+      display: grid;
+      gap: 14px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .client-card {
+      border: 1px solid var(--soft-border);
+      border-radius: 10px;
+      padding: 18px;
+      background: #ffffff;
+      box-shadow: var(--card-shadow);
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .client-card:hover {
+      border-color: #d5dce7;
+      box-shadow: 0 14px 34px rgba(31, 41, 51, 0.09);
+      transform: translateY(-1px);
+    }
+
+    .client-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .client-name {
+      margin: 0;
+      overflow-wrap: anywhere;
+      color: #182230;
+      font-size: 1.08rem;
+      font-weight: 800;
+      line-height: 1.3;
+    }
+
+    .client-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .small-button {
+      background: #eef2ff;
+      color: #1e40af;
+      padding: 8px 11px;
+      font-size: 0.9rem;
+    }
+
+    .small-button:hover {
+      background: #dfe7ff;
+    }
+
+    .delete-button {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .delete-button:hover {
+      background: #ffe7e2;
+    }
+
+    .note-text,
+    .edit-note {
+      margin: 0;
+      color: #475467;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+
+    .note-text {
+      border-left: 3px solid #e4e9f2;
+      padding: 2px 0 2px 12px;
+      font-size: 0.98rem;
+      line-height: 1.65;
+    }
+
+    .edit-note {
+      display: none;
+      margin-bottom: 10px;
+    }
+
+    .save-button {
+      display: none;
+    }
+
+    .client-card.editing .note-text {
+      display: none;
+    }
+
+    .client-card.editing .edit-note {
+      display: block;
+    }
+
+    .client-card.editing .save-button {
+      display: inline-block;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 28px 16px;
+      color: var(--muted);
+      text-align: center;
+      background: #f8fafc;
+    }
+
+    @media (max-width: 640px) {
+      .app {
+        padding: 30px 12px;
+      }
+
+      .panel {
+        padding: 16px;
+      }
+
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .search-input {
+        max-width: none;
+      }
+
+      .search-label {
+        max-width: none;
+      }
+
+      .client-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .client-actions {
+        width: 100%;
+      }
+
+      .small-button {
+        flex: 1;
+      }
+
+      .client-card {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Client Notes Tracker</h1>
+      <p class="subtitle">Keep all your client notes in one place</p>
+    </header>
+
+    <section class="panel" aria-label="Add a client note">
+      <form class="client-form" id="clientForm">
+        <div class="form-row">
+          <label for="clientName">Client name</label>
+          <input id="clientName" type="text" autocomplete="off" placeholder="Enter client name" required />
+        </div>
+
+        <div class="form-row">
+          <label for="clientNote">Notes</label>
+          <textarea id="clientNote" placeholder="Add notes for this client" required></textarea>
+        </div>
+
+        <button class="primary-button" type="submit">Add Client</button>
+      </form>
+    </section>
+
+    <section class="panel" aria-label="Client list">
+      <div class="toolbar">
+        <h2>Clients</h2>
+        <label class="search-label">
+          <span class="visually-hidden">Search clients</span>
+          <input class="search-input" id="searchInput" type="search" placeholder="Search clients" />
+        </label>
+      </div>
+
+      <ul class="client-list" id="clientList"></ul>
+      <p class="empty-state" id="emptyState">No clients yet. Add your first client above.</p>
+    </section>
+  </main>
+
+  <script>
+    const storageKey = "client-notes-tracker-clients";
+    const clientForm = document.querySelector("#clientForm");
+    const clientName = document.querySelector("#clientName");
+    const clientNote = document.querySelector("#clientNote");
+    const searchInput = document.querySelector("#searchInput");
+    const clientList = document.querySelector("#clientList");
+    const emptyState = document.querySelector("#emptyState");
+
+    let clients = loadClients();
+
+    clientForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const name = clientName.value.trim();
+      const note = clientNote.value.trim();
+
+      if (!name || !note) {
+        return;
+      }
+
+      clients.unshift({
+        id: createId(),
+        name,
+        note
+      });
+
+      saveClients();
+      clientForm.reset();
+      clientName.focus();
+      renderClients();
+    });
+
+    searchInput.addEventListener("input", renderClients);
+
+    clientList.addEventListener("click", (event) => {
+      const card = event.target.closest("[data-client-id]");
+
+      if (!card) {
+        return;
+      }
+
+      const clientId = card.dataset.clientId;
+
+      if (event.target.matches(".edit-button")) {
+        card.classList.add("editing");
+        card.querySelector(".edit-note").focus();
+      }
+
+      if (event.target.matches(".save-button")) {
+        const newNote = card.querySelector(".edit-note").value.trim();
+
+        if (!newNote) {
+          return;
+        }
+
+        clients = clients.map((client) => {
+          if (client.id !== clientId) {
+            return client;
+          }
+
+          return { ...client, note: newNote };
+        });
+
+        saveClients();
+        renderClients();
+      }
+
+      if (event.target.matches(".delete-button")) {
+        clients = clients.filter((client) => client.id !== clientId);
+        saveClients();
+        renderClients();
+      }
+    });
+
+    function loadClients() {
+      const savedClients = localStorage.getItem(storageKey);
+
+      if (!savedClients) {
+        return [];
+      }
+
+      try {
+        return JSON.parse(savedClients);
+      } catch {
+        return [];
+      }
+    }
+
+    function saveClients() {
+      localStorage.setItem(storageKey, JSON.stringify(clients));
+    }
+
+    function createId() {
+      if (window.crypto && crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+
+      return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    }
+
+    function renderClients() {
+      const searchTerm = searchInput.value.trim().toLowerCase();
+      const filteredClients = clients.filter((client) =>
+        client.name.toLowerCase().includes(searchTerm)
+      );
+
+      clientList.innerHTML = "";
+      emptyState.textContent = clients.length
+        ? "No matching clients found."
+        : "No clients yet. Add your first client above.";
+      emptyState.hidden = filteredClients.length > 0;
+
+      filteredClients.forEach((client) => {
+        const item = document.createElement("li");
+        item.className = "client-card";
+        item.dataset.clientId = client.id;
+
+        const header = document.createElement("div");
+        header.className = "client-header";
+
+        const name = document.createElement("h3");
+        name.className = "client-name";
+        name.textContent = client.name;
+
+        const actions = document.createElement("div");
+        actions.className = "client-actions";
+
+        const editButton = document.createElement("button");
+        editButton.className = "small-button edit-button";
+        editButton.type = "button";
+        editButton.textContent = "Edit";
+
+        const saveButton = document.createElement("button");
+        saveButton.className = "small-button save-button";
+        saveButton.type = "button";
+        saveButton.textContent = "Save";
+
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "small-button delete-button";
+        deleteButton.type = "button";
+        deleteButton.textContent = "Delete";
+
+        const note = document.createElement("p");
+        note.className = "note-text";
+        note.textContent = client.note;
+
+        const editNote = document.createElement("textarea");
+        editNote.className = "edit-note";
+        editNote.value = client.note;
+        editNote.setAttribute("aria-label", `Edit notes for ${client.name}`);
+
+        actions.append(editButton, saveButton, deleteButton);
+        header.append(name, actions);
+        item.append(header, note, editNote);
+        clientList.append(item);
+      });
+    }
+
+    renderClients();
+  </script>
+</body>
+</html>
